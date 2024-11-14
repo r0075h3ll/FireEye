@@ -1,7 +1,6 @@
 <h1 align="center">
   <br>
   <a href="https://github.com/r0075h3ll/FireEye"><img src="https://i.ibb.co/LYvR0yw/Untitled-design-2-removebg-preview.png" alt="FireEye"></a>
-  <br>
   FireEye
   <br>
 </h1>
