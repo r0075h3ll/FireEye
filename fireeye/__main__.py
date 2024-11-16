@@ -40,4 +40,4 @@ def main():
         logger.info(e, exc_info=True)
 
 
-main()
+#main()
