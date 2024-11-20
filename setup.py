@@ -42,7 +42,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         'console_scripts': [
-            'fireeye' = 'fireeye.__main__:main'
+            'fireeye = fireeye.__main__:main'
 
         ]
     },
