@@ -1,7 +1,6 @@
 name: Create PR for 'main'
 on:
   push
-  workflow_dispatch:
 
 jobs:
   linting:
