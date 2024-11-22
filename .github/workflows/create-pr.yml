@@ -1,6 +1,8 @@
 name: Create PR for 'main'
 on:
-  push
+  push:
+    branches:
+      - develop
 
 jobs:
   linting:
