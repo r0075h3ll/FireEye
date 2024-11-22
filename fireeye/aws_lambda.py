@@ -1,6 +1,14 @@
 import datetime
+
 from fireeye.aws import AWS
-from fireeye.logger import logger
+from fireeye.logger import logger, dark_green, end
+
+
+def print_logs(api_response: dict):
+    for resp in api_response["response"]:
+        logger.info(f"{dark_green}{resp[2].get('value')}{end}")
+        logger.info(f"{resp[1].get('value')}")
+
 
 def time_diff():
     this_time = datetime.datetime.now()
@@ -35,7 +43,7 @@ class CloudWatch(AWS):
         self.query = ""
 
     def _create_query(self, to_trace):
-        query = f'fields @timestamp, @message | filter @message like "{to_trace}"'
+        query = f'fields @timestamp, @message, @logStream | filter @message like "{to_trace}"'
 
         self.query = query
 
@@ -53,9 +61,13 @@ class CloudWatch(AWS):
         )
 
         logger.info(f"Query String :: {self.query}")
-        logger.info(f"Time Range :: {datetime.datetime.fromtimestamp(self.start_time)} to {datetime.datetime.fromtimestamp(self.end_time)}")
-        logger.info(f"Log Group :: {self.resource_name}")
+        logger.info(
+            f"Time Range :: {datetime.datetime.fromtimestamp(self.start_time)} to {datetime.datetime.fromtimestamp(self.end_time)}"
+        )
+        logger.info(f"Log Group :: {self.resource_name}\n")
 
-        query_results = lambda_client.get_query_results(queryId=query_id.get('queryId', False))
+        query_results = lambda_client.get_query_results(
+            queryId=query_id.get("queryId", False)
+        )
 
-        return {"response": query_results}
+        return {"response": query_results.get("results", None)}

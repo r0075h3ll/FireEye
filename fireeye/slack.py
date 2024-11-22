@@ -1,15 +1,15 @@
 import os
-from fireeye.logger import logger
+
 import urllib3
+
+from fireeye.logger import logger
 
 requests = urllib3.PoolManager()
 webhook_url = os.getenv("SLACK_URL", False)
 
 
 def create_payload(txt="Hi, it's FireEye here!"):
-    message = {
-        "text": f"{txt}"
-    }
+    message = {"text": f"{txt}"}
 
 
 class SlackApp:
