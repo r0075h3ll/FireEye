@@ -3,6 +3,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+
 def banner():
     print("""\t\n
 ⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⢠⡆⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -24,6 +25,4 @@ def banner():
           \n""")
 
 
-
 banner()
-# import fireeye.check_main

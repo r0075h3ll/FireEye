@@ -1,12 +1,10 @@
 import argparse
+
 import fireeye.slack as slack_message
-from fireeye.aws_lambda import CloudWatch
+from fireeye.aws_lambda import CloudWatch, print_logs
+from fireeye.exceptions import CloudWatchLogException
 from fireeye.logger import logger
 from fireeye.slack import SlackApp
-from fireeye.exceptions import CloudWatchLogException
-import pdb
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--trace", help="Match a string/character", dest="to_trace", default="duration")
@@ -25,7 +23,7 @@ def main():
         lambda_logs = CloudWatch(args.arn or args.res_name)
         logs = lambda_logs.lambda_logs(args.to_trace)
 
-        print(logs)
+        print_logs(logs)
 
         if not logs["response"]:
             raise CloudWatchLogException("Invalid Response")
@@ -39,5 +37,4 @@ def main():
     except Exception as e:
         logger.info(e, exc_info=True)
 
-
-#main()
+# main()

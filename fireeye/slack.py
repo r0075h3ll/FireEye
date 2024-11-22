@@ -1,6 +1,8 @@
 import os
-from fireeye.logger import logger
+
 import urllib3
+
+from fireeye.logger import logger
 
 requests = urllib3.PoolManager()
 webhook_url = os.getenv("SLACK_URL", False)
