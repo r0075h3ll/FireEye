@@ -6,8 +6,8 @@ from fireeye.logger import logger, dark_green, end
 
 def print_logs(api_response: dict):
     for resp in api_response['response']:
-        logger.info(f"{dark_green}{resp[2].get("value")}{end}")
-        logger.info(f"{resp[1].get("value")}")
+        logger.info(f"{dark_green}{resp[2].get('value')}{end}")
+        logger.info(f"{resp[1].get('value')}")
 
 
 def time_diff():
