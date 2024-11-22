@@ -7,10 +7,19 @@ from fireeye.logger import logger
 from fireeye.slack import SlackApp
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--trace", help="Match a string/character", dest="to_trace", default="duration")
+parser.add_argument(
+    "--trace", help="Match a string/character", dest="to_trace", default="duration"
+)
 parser.add_argument("--arn", help="AWS Resource ARN", dest="arn", default=False)
-parser.add_argument("--resource-name", help="AWS Lambda Name", dest="res_name", default=False)
-parser.add_argument("--slack-url", help="Slack App incoming webhook URL", dest="slack_webhook", default=False)
+parser.add_argument(
+    "--resource-name", help="AWS Lambda Name", dest="res_name", default=False
+)
+parser.add_argument(
+    "--slack-url",
+    help="Slack App incoming webhook URL",
+    dest="slack_webhook",
+    default=False,
+)
 
 args = parser.parse_args()
 if (args.arn or args.res_name) is False:
@@ -36,5 +45,6 @@ def main():
             pass
     except Exception as e:
         logger.info(e, exc_info=True)
+
 
 # main()

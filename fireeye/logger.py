@@ -7,7 +7,9 @@ green = "\033[32m"
 end = "\033[00m"
 dark_green = "\033[92m"
 
-formatter = logging.Formatter(f'{red}%(asctime)s - %(name)s{end} :: {green}%(levelname)s - %(message)s{end}')
+formatter = logging.Formatter(
+    f"{red}%(asctime)s - %(name)s{end} :: {green}%(levelname)s - %(message)s{end}"
+)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
 

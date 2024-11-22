@@ -9,9 +9,7 @@ webhook_url = os.getenv("SLACK_URL", False)
 
 
 def create_payload(txt="Hi, it's FireEye here!"):
-    message = {
-        "text": f"{txt}"
-    }
+    message = {"text": f"{txt}"}
 
 
 class SlackApp:

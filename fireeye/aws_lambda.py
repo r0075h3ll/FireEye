@@ -5,7 +5,7 @@ from fireeye.logger import logger, dark_green, end
 
 
 def print_logs(api_response: dict):
-    for resp in api_response['response']:
+    for resp in api_response["response"]:
         logger.info(f"{dark_green}{resp[2].get('value')}{end}")
         logger.info(f"{resp[1].get('value')}")
 
@@ -62,9 +62,12 @@ class CloudWatch(AWS):
 
         logger.info(f"Query String :: {self.query}")
         logger.info(
-            f"Time Range :: {datetime.datetime.fromtimestamp(self.start_time)} to {datetime.datetime.fromtimestamp(self.end_time)}")
+            f"Time Range :: {datetime.datetime.fromtimestamp(self.start_time)} to {datetime.datetime.fromtimestamp(self.end_time)}"
+        )
         logger.info(f"Log Group :: {self.resource_name}\n")
 
-        query_results = lambda_client.get_query_results(queryId=query_id.get('queryId', False))
+        query_results = lambda_client.get_query_results(
+            queryId=query_id.get("queryId", False)
+        )
 
-        return {"response": query_results.get('results', None)}
+        return {"response": query_results.get("results", None)}
