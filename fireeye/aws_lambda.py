@@ -35,12 +35,30 @@ class CloudWatch(AWS):
     def __init__(self, arn):
         super().__init__()
 
-        self.resource_name = f"/aws/lambda/{parse_arn(arn)}"  # Lambda name
+        self.resource_name = f"{parse_arn(arn)}"  # Lambda name
         self.lambda_arn = arn  # optional
         self.log_stream_count = 3  # default set to fetch latest 3 streams
         self.aws_session = super().aws_session()
         self.start_time, self.end_time = time_diff()
         self.query = ""
+
+    def get_ctx_info(self):
+        sts_client = self.aws_session.client("sts")
+        get_caller_id = sts_client.get_caller_identity()
+        acc_id = get_caller_id.get("Account")
+        user_iam = get_caller_id.get("Arn").split(":")[-1]
+        arn = self.lambda_arn or False
+        res_name = self.resource_name
+
+        ctx_info = {
+            "acc_id": acc_id,
+            "default_region": self.aws_session.region_name,
+            "iam_user": user_iam,
+            "resource_arn": arn,
+            "res_name": res_name,
+        }
+
+        return ctx_info
 
     def _create_query(self, to_trace):
         query = f'fields @timestamp, @message, @logStream | filter @message like "{to_trace}"'
@@ -49,6 +67,7 @@ class CloudWatch(AWS):
 
     def lambda_logs(self, to_trace):
         lambda_client = self.aws_session.client("logs")
+        self.resource_name = f"/aws/lambda/{self.resource_name}"
 
         self._create_query(to_trace)
 

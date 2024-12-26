@@ -24,7 +24,7 @@ install_requires = [
 
 setup(
     name="FireEye",
-    version="0.0.4",
+    version="0.6.0-dev",
     author="Hardik Nanda",
     author_email="hnanda21@gmail.com",
     description="AWS Monitoring Toolkit",
