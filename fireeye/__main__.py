@@ -43,12 +43,13 @@ def main():
             raise CloudWatchLogException("Invalid Response")
 
         # if args.slack_webhook:
-            # slack_app = SlackApp(url=args.slack_webhook)
-            # payload = slack_message.create_payload(ctx_info, logs)
-            #
-            # slack_app.send(payload)
-            # pass
+        # slack_app = SlackApp(url=args.slack_webhook)
+        # payload = slack_message.create_payload(ctx_info, logs)
+        #
+        # slack_app.send(payload)
+        # pass
     except Exception as e:
         logger.info(e, exc_info=True)
+
 
 # main()

@@ -20,12 +20,10 @@ def create_payload(info: dict, txt="Hi, it's FireEye here!"):
                 "text": {
                     "type": "plain_text",
                     "text": "AWS Alert from FireEye",
-                    "emoji": "true"
-                }
+                    "emoji": "true",
+                },
             },
-            {
-                "type": "divider"
-            },
+            {"type": "divider"},
             {
                 "type": "rich_text",
                 "elements": [
@@ -35,46 +33,26 @@ def create_payload(info: dict, txt="Hi, it's FireEye here!"):
                             {
                                 "type": "text",
                                 "text": f"Account ID: {account_id}",
-                                "style": {
-                                    "bold": "true"
-                                }
+                                "style": {"bold": "true"},
                             },
-                            {
-                                "type": "text",
-                                "text": "\n"
-                            },
+                            {"type": "text", "text": "\n"},
                             {
                                 "type": "text",
                                 "text": f"Resource ARN: {resource_arn}",
-                                "style": {
-                                    "bold": "true"
-                                }
+                                "style": {"bold": "true"},
                             },
-                            {
-                                "type": "text",
-                                "text": "\n"
-                            },
+                            {"type": "text", "text": "\n"},
                             {
                                 "type": "text",
                                 "text": f"Resource Name: {resource_name}",
-                                "style": {
-                                    "bold": "true"
-                                }
-                            }
-                        ]
+                                "style": {"bold": "true"},
+                            },
+                        ],
                     }
-                ]
+                ],
             },
-            {
-                "type": "divider"
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"```{txt}```"
-                }
-            }
+            {"type": "divider"},
+            {"type": "section", "text": {"type": "mrkdwn", "text": f"```{txt}```"}},
         ]
     }
 
