@@ -54,6 +54,5 @@ fireeye --trace Bill --resource-name lambda_name
 
 You're welcome to open PR for making direct contributions to the project. Additionally, "Issues" section will
 be considered for
-
 - bug reports
 - feature requests

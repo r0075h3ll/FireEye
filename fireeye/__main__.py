@@ -12,6 +12,7 @@ parser.add_argument("--arn", help="AWS Resource ARN", dest="arn", default=False)
 parser.add_argument(
     "--resource-name", help="AWS Lambda Name", dest="res_name", default=False
 )
+
 # parser.add_argument(
 #     "--slack-url",
 #     help="Slack App incoming webhook URL",
