@@ -1,6 +1,6 @@
 name: Create PR for 'main'
 on:
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   linting:
