@@ -14,7 +14,6 @@ jobs:
           ls -alt 
           pip install black
           black .
-          echo ".github" > .gitignore
           git add .
           git config --global user.name "Github Actions Bot"
           git config --global user.email ""
