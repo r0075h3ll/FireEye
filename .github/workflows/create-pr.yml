@@ -1,8 +1,6 @@
 name: Create PR for 'main'
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch
 
 jobs:
   linting:
@@ -11,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reformat
+      - name: Reformat Code
         run: |
           ls -alt 
           pip install black
