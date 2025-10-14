@@ -14,7 +14,7 @@
 </div>
 
 \
-FireEye is an AWS monitoring toolkit for DevOps, Security, and IT teams.
+FireEye is an AWS monitoring toolkit for DevOps, Security, and IT teams. It can currently trace strings in AWS Lambda function(s) output logs via CloudWatch using simple [commands](#monitor-lambda-functions-w-cloudwatch-logs-insights).
 
 [//]: # (insert gif)
 [![asciicast](https://asciinema.org/a/696182.svg)](https://asciinema.org/a/696182)
