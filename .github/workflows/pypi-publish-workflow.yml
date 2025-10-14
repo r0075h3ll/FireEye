@@ -15,6 +15,7 @@ jobs:
         run: python setup.py sdist
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           name: dist
           path: ${{ github.workspace }}/dist
   pypi-publish:
@@ -27,7 +28,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist
+      - run: |
+          ls -alt
+          ls -alt dist
       - name: Publish package to PyPI
+        if: false
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: ${{ vars.PYPI_USER }}
