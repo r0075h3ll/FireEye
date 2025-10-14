@@ -29,11 +29,7 @@ jobs:
         with:
           name: dist
           path: ${{ github.workspace }}/dist
-      - run: |
-          ls -alt
-          ls -alt dist
       - name: Publish package to PyPI
-        if: false
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: ${{ vars.PYPI_USER }}
