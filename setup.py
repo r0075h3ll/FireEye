@@ -23,7 +23,7 @@ install_requires = [
 ]
 
 setup(
-    name="FireEye",
+    name="FireEye-AWS",
     version="0.6.0-dev",
     author="Hardik Nanda",
     author_email="hnanda21@gmail.com",
@@ -39,7 +39,6 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Development Status :: 1 - Planning",
         "Topic :: Software Development",
-        "License :: OSI Approved :: Apache-2.0 License",
     ],
     install_requires=install_requires,
     python_requires=">=3.8",
