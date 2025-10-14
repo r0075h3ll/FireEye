@@ -22,8 +22,13 @@ FireEye is an AWS monitoring toolkit for DevOps, Security, and IT teams. It can 
 ### Installation
 
 ```bash
+git clone https://github.com/r0075h3ll/FireEye && cd FireEye
 pip install setuptools
 python3 setup.py install
+
+# or
+
+pip3 install FireEye-AWS
 ```
 
 ### Features
