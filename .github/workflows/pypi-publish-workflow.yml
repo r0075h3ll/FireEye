@@ -28,6 +28,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist
+          path: ${{ github.workspace }}/dist
       - run: |
           ls -alt
           ls -alt dist
