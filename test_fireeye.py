@@ -223,6 +223,31 @@ def test_stop_failure_is_warned_not_hidden():
         logger.removeHandler(handler)
 
     assert any(r.levelno >= logging.WARNING for r in records), records
+def test_old_module_path_still_works():
+    import sys
+    import warnings
+
+    import fireeye.cloudwatch
+
+    # a previous import would have cached the module and swallowed the warning
+    sys.modules.pop("fireeye.aws_lambda", None)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        import fireeye.aws_lambda as old
+
+    assert old.CloudWatch is fireeye.cloudwatch.CloudWatch, "must be the same class"
+    assert old.parse_arn is fireeye.cloudwatch.parse_arn
+    assert (
+        old.parse_arn("arn:aws:lambda:eu-west-1:123456789012:function:biller")
+        == "biller"
+    )
+
+    deprecations = [w for w in caught if w.category is DeprecationWarning]
+    assert deprecations, "importing the old path must warn"
+    assert "1.0.0" in str(deprecations[0].message), "the warning must name a removal version"
+
+    assert set(old.__all__) <= set(dir(fireeye.cloudwatch))
 
 
 if __name__ == "__main__":
