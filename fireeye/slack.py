@@ -79,17 +79,17 @@ class SlackApp:
 
     def send(self, payload: dict):
         if not self.url:
-            logger.info("No Slack webhook URL, skipping alert")
+            logger.error("No Slack webhook URL set, alert not sent")
             return False
 
         try:
             resp = http.request("POST", self.url, json=payload, timeout=10, retries=1)
         except Exception as e:
-            logger.info(e)
+            logger.error(f"Slack alert failed: {e}")
             return False
 
         if resp.status != 200:
-            logger.info(f"Slack returned {resp.status}: {resp.data.decode(errors='replace')}")
+            logger.error(f"Slack returned {resp.status}: {resp.data.decode(errors='replace')}")
             return False
 
         logger.info("Notification sent successfully!")

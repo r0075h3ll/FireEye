@@ -7,7 +7,8 @@ __version__ = "0.7.0"
 
 
 def banner():
-    print(f"\n\tFireEye v{__version__}\n")
+    # stderr, so it does not end up in piped or redirected search results
+    print(f"\n\tFireEye v{__version__}\n", file=sys.stderr)
 
 
 banner()
