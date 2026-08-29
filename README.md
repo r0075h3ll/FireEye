@@ -126,6 +126,61 @@ python3 test_fireeye.py
 No test framework needed. The checks cover ARN parsing, query building and escaping, result handling,
 and the Slack payload, and they make no AWS calls.
 
+##### Testing against a local AWS
+
+[MiniStack](https://github.com/ministackorg/ministack) emulates CloudWatch Logs locally, so the AWS
+paths can be exercised without touching a real account or paying for Logs Insights scans. It is pure
+Python and needs no Docker.
+
+```bash
+pip install ministack
+ministack -d          # starts on port 4566, `ministack --stop` to stop
+```
+
+Seed a log group with a Lambda stream and an EC2 style stream:
+
+```python
+import time, boto3
+
+logs = boto3.client(
+    "logs", region_name="us-east-1", endpoint_url="http://127.0.0.1:4566",
+    aws_access_key_id="test", aws_secret_access_key="test",
+)
+group = "/aws/lambda/example-fn"
+logs.create_log_group(logGroupName=group)
+
+now = int(time.time() * 1000)
+for stream, events in {
+    "2026/01/01/[$LATEST]aaaa": ["REPORT RequestId: 1111\tDuration: 514.37 ms", "ERROR exploded"],
+    "i-0abc1234": ["kernel: Out of memory: Killed process 999"],
+}.items():
+    logs.create_log_stream(logGroupName=group, logStreamName=stream)
+    logs.put_log_events(
+        logGroupName=group, logStreamName=stream,
+        logEvents=[{"timestamp": now - 1000 * i, "message": m} for i, m in enumerate(events)],
+    )
+```
+
+Point FireEye at it with `AWS_ENDPOINT_URL` and any non-empty credentials:
+
+```bash
+export AWS_ENDPOINT_URL=http://127.0.0.1:4566
+export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
+
+fireeye --resource-name example-fn --trace ERROR --regex
+fireeye --resource-name i-0abc1234 --log-group /aws/lambda/example-fn --trace '(?i)out of memory' --regex
+```
+
+Two differences from real CloudWatch are worth knowing before you trust a result:
+
+- MiniStack does not apply `filter @message like "text"`, the quoted form, and returns every event
+  instead. The regex form, `like /text/`, filters correctly. So use `--regex` locally. Real
+  CloudWatch filters both, verified against a live account.
+- A query run immediately after seeding can come back empty. Retry before believing it.
+
+MiniStack cannot tell you whether a CloudWatch agent on a real instance names its streams after the
+instance ID. That is a matter of how the agent is configured, not something the code decides.
+
 ### To Do
 
 - [x] EC2 Log Monitoring
