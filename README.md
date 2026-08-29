@@ -10,7 +10,7 @@
 <div align="center">
 <img src="https://img.shields.io/badge/License-Apache%202.0-blue">
 <img src="https://img.shields.io/badge/Python-3.12-blue">
-<img src="https://img.shields.io/badge/Release-0.6.0 (dev)-green">
+<img src="https://img.shields.io/badge/Release-0.7.0-green">
 </div>
 
 \
