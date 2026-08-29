@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import urllib3
@@ -33,7 +34,18 @@ def format_matches(matches: list, max_lines: int = 20, limit: int = BLOCK_LIMIT)
     return "\n".join(lines)
 
 
-def create_payload(info: dict, query: str, matches: list):
+def utc_now():
+    # UTC, so an alert read in another timezone still says when it fired
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def create_payload(info: dict, query: str, matches: list, alert_time: str = ""):
+    """Build the Slack message.
+
+    `alert_time` defaults to now. It is stamped when the payload is assembled,
+    which is a moment before the post, not after any retry.
+    """
+    alert_time = alert_time or utc_now()
     account_id = info.get("acc_id", "none")
     resource_arn = info.get("resource_arn") or "none"
     resource_name = info.get("res_name", "none")
@@ -70,6 +82,12 @@ def create_payload(info: dict, query: str, matches: list):
                             {
                                 "type": "text",
                                 "text": f"Resource Name: {resource_name}",
+                                "style": {"bold": True},
+                            },
+                            {"type": "text", "text": "\n"},
+                            {
+                                "type": "text",
+                                "text": f"Alert Time: {alert_time}",
                                 "style": {"bold": True},
                             },
                         ],

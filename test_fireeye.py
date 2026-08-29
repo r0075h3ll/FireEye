@@ -10,7 +10,7 @@ from fireeye.cloudwatch import (
     quote,
 )
 from fireeye.exceptions import ARNFormatError, CloudWatchLogException
-from fireeye.slack import create_payload, format_matches
+from fireeye.slack import create_payload, format_matches, utc_now
 
 
 def test_parse_arn():
@@ -107,6 +107,28 @@ def test_create_payload():
     body = payload["blocks"][-1]["text"]["text"]
     assert "boom" in body and "fields @timestamp" in body
     assert "Resource ARN: none" in str(payload)
+
+    # the alert carries its own send time, in UTC, not the log line timestamps
+    stamped = create_payload(
+        {"acc_id": "123", "res_name": "biller", "resource_arn": False},
+        "fields @timestamp",
+        [("12:00", "boom")],
+        alert_time="2026-08-29 09:23:03 UTC",
+    )
+    assert "Alert Time: 2026-08-29 09:23:03 UTC" in str(stamped)
+
+
+def test_utc_now_format():
+    import datetime
+    import re
+
+    stamp = utc_now()
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC", stamp), stamp
+
+    # within a minute of actual UTC, so a local-time clock would not pass
+    parsed = datetime.datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S UTC")
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+    assert abs((now - parsed).total_seconds()) < 60
 
 
 class FakeLogs:
