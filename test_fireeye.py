@@ -125,7 +125,8 @@ class FakeLogs:
 
         status = self.statuses.pop(0) if self.statuses else "Running"
 
-        return {"status": status, "results": [] if status == "Complete" else None}
+        # the real API returns an empty list while a query is in progress
+        return {"status": status, "results": []}
 
     def stop_query(self, queryId):
         self.stopped.append(queryId)
@@ -174,6 +175,54 @@ def test_interrupt_stops_the_query():
         pass
 
     assert logs.stopped == ["q1"], "an interrupted query must be stopped"
+
+
+def test_interrupt_during_the_sleep_stops_the_query():
+    import fireeye.cloudwatch as cloudwatch
+
+    def interrupting_sleep(seconds):
+        raise KeyboardInterrupt
+
+    logs = FakeLogs(["Running"])
+    slept = cloudwatch.time.sleep
+    cloudwatch.time.sleep = interrupting_sleep
+    try:
+        _waiter()._wait_for_results(logs, "q1")
+        raise AssertionError("should have propagated KeyboardInterrupt")
+    except KeyboardInterrupt:
+        pass
+    finally:
+        cloudwatch.time.sleep = slept
+
+    assert logs.stopped == ["q1"], "an interrupt between polls must stop the query"
+
+
+def test_stop_failure_is_warned_not_hidden():
+    import logging
+
+    class Unstoppable(FakeLogs):
+        def stop_query(self, queryId):
+            raise RuntimeError("credentials expired")
+
+    records = []
+
+    class Capture(logging.Handler):
+        def emit(self, record):
+            records.append(record)
+
+    from fireeye.logger import logger
+
+    handler = Capture()
+    logger.addHandler(handler)
+    try:
+        _waiter(wait=0)._wait_for_results(Unstoppable(["Running"]), "q1")
+        raise AssertionError("should have timed out")
+    except CloudWatchLogException:
+        pass
+    finally:
+        logger.removeHandler(handler)
+
+    assert any(r.levelno >= logging.WARNING for r in records), records
 
 
 if __name__ == "__main__":
