@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import urllib3
@@ -31,6 +32,11 @@ def format_matches(matches: list, max_lines: int = 20, limit: int = BLOCK_LIMIT)
         lines.append(f"... and {dropped} more")
 
     return "\n".join(lines)
+
+
+def utc_now():
+    # UTC, so an alert read in another timezone still says when it fired
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
 
 def create_payload(info: dict, query: str, matches: list):
@@ -70,6 +76,12 @@ def create_payload(info: dict, query: str, matches: list):
                             {
                                 "type": "text",
                                 "text": f"Resource Name: {resource_name}",
+                                "style": {"bold": True},
+                            },
+                            {"type": "text", "text": "\n"},
+                            {
+                                "type": "text",
+                                "text": f"Alert Time: {utc_now()}",
                                 "style": {"bold": True},
                             },
                         ],
