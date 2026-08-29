@@ -39,7 +39,13 @@ def utc_now():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
 
-def create_payload(info: dict, query: str, matches: list):
+def create_payload(info: dict, query: str, matches: list, alert_time: str = ""):
+    """Build the Slack message.
+
+    `alert_time` defaults to now. It is stamped when the payload is assembled,
+    which is a moment before the post, not after any retry.
+    """
+    alert_time = alert_time or utc_now()
     account_id = info.get("acc_id", "none")
     resource_arn = info.get("resource_arn") or "none"
     resource_name = info.get("res_name", "none")
@@ -81,7 +87,7 @@ def create_payload(info: dict, query: str, matches: list):
                             {"type": "text", "text": "\n"},
                             {
                                 "type": "text",
-                                "text": f"Alert Time: {utc_now()}",
+                                "text": f"Alert Time: {alert_time}",
                                 "style": {"bold": True},
                             },
                         ],

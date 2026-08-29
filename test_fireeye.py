@@ -109,7 +109,13 @@ def test_create_payload():
     assert "Resource ARN: none" in str(payload)
 
     # the alert carries its own send time, in UTC, not the log line timestamps
-    assert f"Alert Time: {utc_now()[:13]}" in str(payload)
+    stamped = create_payload(
+        {"acc_id": "123", "res_name": "biller", "resource_arn": False},
+        "fields @timestamp",
+        [("12:00", "boom")],
+        alert_time="2026-08-29 09:23:03 UTC",
+    )
+    assert "Alert Time: 2026-08-29 09:23:03 UTC" in str(stamped)
 
 
 def test_utc_now_format():
