@@ -66,6 +66,20 @@ Logs are scoped to the streams belonging to the instance.
 fireeye --trace "Out of memory" --resource-name i-0abc1234 --log-group /var/log/syslog
 ```
 
+Instance scoping assumes the CloudWatch agent writes one stream per instance named after the
+instance ID, which is what `"log_stream_name": "{instance_id}"` produces. Verified against agent
+1.300069.1 on Amazon Linux 2023.
+
+If your agent uses something else, `{hostname}` or a fixed string, then `--resource-name i-0abc1234`
+matches no streams and returns nothing. FireEye cannot tell that apart from a search that genuinely
+found no lines. Search the group directly instead, which reads every stream in it:
+
+```bash
+fireeye --trace "Out of memory" --resource-name /var/log/syslog
+```
+
+Check what your agent is doing with `aws logs describe-log-streams --log-group-name <group>`.
+
 ##### Search
 
 `--trace` is a plain substring match by default. Pass `--regex` to use a CloudWatch regex
