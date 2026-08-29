@@ -66,8 +66,9 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-if (args.arn or args.res_name) is False:
-    exit(parser.print_help())
+if not (args.arn or args.res_name):
+    parser.print_help()
+    sys.exit(2)
 
 
 def fail(message):

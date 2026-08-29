@@ -7,13 +7,28 @@ from fireeye.logger import logger
 http = urllib3.PoolManager()
 
 
-def format_matches(matches: list, max_lines: int = 20):
+# Slack rejects a section whose text runs past 3000 characters, and typical
+# Lambda REPORT lines blow through that well before max_lines is reached.
+BLOCK_LIMIT = 2900
+
+
+def format_matches(matches: list, max_lines: int = 20, limit: int = BLOCK_LIMIT):
     if not matches:
         return "No matching log lines."
 
-    lines = [f"{stamp} {message}" for stamp, message in matches[:max_lines]]
-    if len(matches) > max_lines:
-        lines.append(f"... and {len(matches) - max_lines} more")
+    lines = []
+    used = 0
+    for stamp, message in matches[:max_lines]:
+        line = f"{stamp} {message}"
+        if used + len(line) > limit:
+            break
+
+        lines.append(line)
+        used += len(line) + 1
+
+    dropped = len(matches) - len(lines)
+    if dropped > 0:
+        lines.append(f"... and {dropped} more")
 
     return "\n".join(lines)
 

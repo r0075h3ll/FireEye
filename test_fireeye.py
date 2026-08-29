@@ -17,6 +17,12 @@ def test_parse_arn():
     assert parse_arn("arn:aws:ec2:eu-west-1:123456789012:instance/i-0abc1234") == "i-0abc1234"
     assert parse_arn("biller") == "biller"
 
+    # a qualified ARN ends in the alias or version, not the function name
+    assert (
+        parse_arn("arn:aws:lambda:eu-west-1:123456789012:function:biller:PROD")
+        == "biller"
+    )
+
     for bad in ("arn:aws:s3:::my-bucket", "arn:aws:lambda"):
         try:
             parse_arn(bad)
@@ -71,6 +77,16 @@ def test_collect_logs():
     ]
     assert collect_logs({"response": [event, event]}) == [("12:00", "boom")] * 2
     assert collect_logs({"response": None}) == []
+
+
+def test_format_matches_stays_under_slack_limit():
+    from fireeye.slack import BLOCK_LIMIT
+
+    long_line = "REPORT RequestId: 1c6a91a9\tDuration: 514.37 ms\t" + "x" * 120
+    text = format_matches([(f"12:0{i}", long_line) for i in range(20)])
+
+    assert len(text) <= BLOCK_LIMIT + 40  # the "... and N more" line
+    assert text.endswith("more")
 
 
 def test_format_matches():
