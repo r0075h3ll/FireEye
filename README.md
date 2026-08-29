@@ -1,5 +1,5 @@
 <div align="center">
-    <a href="https://github.com/r0075h3ll/FireEye"><img alt="FireEye" src="https://i.ibb.co/LYvR0yw/Untitled-design-2-removebg-preview.png"/></a>
+    <a href="https://github.com/r0075h3ll/FireEye"><img alt="FireEye" src="/static/logo/fireeye.png" width="100"/></a>
     <h2>
     FireEye
     </h2>
