@@ -1,5 +1,5 @@
 <div align="center">
-    <a href="https://github.com/r0075h3ll/FireEye"><img alt="FireEye" src="/static/logo/fireeye.png" width="100"/></a>
+    <a href="https://github.com/r0075h3ll/FireEye"><img alt="FireEye" src="https://raw.githubusercontent.com/r0075h3ll/FireEye/main/static/logo/fireeye.png" width="100"/></a>
     <h2>
     FireEye
     </h2>
@@ -10,7 +10,7 @@
 <div align="center">
 <img src="https://img.shields.io/badge/License-Apache%202.0-blue">
 <img src="https://img.shields.io/badge/Python-3.12-blue">
-<img src="https://img.shields.io/badge/Release-0.7.0-green">
+<img src="https://img.shields.io/badge/Release-0.7.1-green">
 </div>
 
 \
@@ -139,6 +139,14 @@ python3 test_fireeye.py
 
 No test framework needed. The checks cover ARN parsing, query building and escaping, result handling,
 and the Slack payload, and they make no AWS calls.
+
+Packaging is declared in `pyproject.toml`, and the version comes from `fireeye.__version__`. To build
+the distributions locally:
+
+```bash
+pip install build
+python -m build
+```
 
 ##### Testing against a local AWS
 
