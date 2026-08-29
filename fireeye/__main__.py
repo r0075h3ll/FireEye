@@ -1,11 +1,23 @@
 import argparse
+import sys
+
+from botocore.exceptions import BotoCoreError, ClientError
 
 from fireeye.cloudwatch import CloudWatch, collect_logs, print_logs
-from fireeye.exceptions import CloudWatchLogException
+from fireeye.exceptions import ARNFormatError, CloudWatchLogException
 from fireeye.logger import logger
 from fireeye.slack import SlackApp, create_payload
 
-parser = argparse.ArgumentParser()
+
+def positive(value):
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError(f"must be 1 or greater, got {value}")
+
+    return number
+
+
+parser = argparse.ArgumentParser(prog="fireeye")
 parser.add_argument(
     "--trace", help="Match a string/character", dest="to_trace", default="duration"
 )
@@ -29,10 +41,14 @@ parser.add_argument(
     action="store_true",
 )
 parser.add_argument(
-    "--days", help="How far back to search", dest="days", type=int, default=3
+    "--days", help="How far back to search", dest="days", type=positive, default=3
 )
 parser.add_argument(
-    "--limit", help="Maximum log lines to return", dest="limit", type=int, default=100
+    "--limit",
+    help="Maximum log lines to return",
+    dest="limit",
+    type=positive,
+    default=100,
 )
 parser.add_argument(
     "--slack-url",
@@ -42,10 +58,23 @@ parser.add_argument(
     const="",
     default=False,
 )
+parser.add_argument(
+    "--debug",
+    help="Print the full traceback when something fails",
+    dest="debug",
+    action="store_true",
+)
 
 args = parser.parse_args()
 if (args.arn or args.res_name) is False:
     exit(parser.print_help())
+
+
+def fail(message):
+    # exc_info only means something while an exception is being handled
+    logger.error(message, exc_info=args.debug and sys.exc_info()[0] is not None)
+
+    return 1
 
 
 def main():
@@ -64,23 +93,30 @@ def main():
         )
 
         logs = cloudwatch.fetch_logs(args.to_trace, regex=args.regex)
+    except (ARNFormatError, CloudWatchLogException) as e:
+        return fail(e)
+    except ClientError as e:
+        return fail(e.response.get("Error", {}).get("Message", e))
+    except BotoCoreError as e:
+        return fail(e)
 
-        print_logs(logs)
+    print_logs(logs)
 
-        if args.slack_webhook is not False:
-            slack_app = SlackApp(args.slack_webhook)
-            slack_app.send(
-                create_payload(ctx_info, cloudwatch.query, collect_logs(logs))
-            )
+    if logs["response"] is None:
+        return fail("CloudWatch returned no results field")
 
-        if logs["response"] is None:
-            raise CloudWatchLogException("Invalid Response")
+    if not logs["response"]:
+        logger.info("No matching log lines")
 
-        if not logs["response"]:
-            logger.info("No matching log lines")
-    except Exception as e:
-        logger.info(e, exc_info=True)
+    if args.slack_webhook is not False:
+        slack_app = SlackApp(args.slack_webhook)
+        if not slack_app.send(
+            create_payload(ctx_info, cloudwatch.query, collect_logs(logs))
+        ):
+            return fail("Slack alert was not delivered")
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
