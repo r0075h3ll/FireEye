@@ -73,7 +73,14 @@ def main():
                 create_payload(ctx_info, cloudwatch.query, collect_logs(logs))
             )
 
-        if not logs["response"]:
+        if logs["response"] is None:
             raise CloudWatchLogException("Invalid Response")
+
+        if not logs["response"]:
+            logger.info("No matching log lines")
     except Exception as e:
         logger.info(e, exc_info=True)
+
+
+if __name__ == "__main__":
+    main()

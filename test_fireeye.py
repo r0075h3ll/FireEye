@@ -28,16 +28,16 @@ def test_build_query():
 
 
 def test_collect_logs():
-    response = {"response": [[{"value": "id"}, {"value": "boom"}, {"value": "12:00"}]]}
-    assert collect_logs(response) == {"12:00": "boom"}
-    assert collect_logs({"response": None}) == {}
+    event = [{"value": "12:00"}, {"value": "boom"}, {"value": "stream"}]
+    assert collect_logs({"response": [event, event]}) == [("12:00", "boom")] * 2
+    assert collect_logs({"response": None}) == []
 
 
 def test_format_matches():
-    assert format_matches({}) == "No matching log lines."
-    assert format_matches({"12:00": "boom"}) == "12:00 boom"
+    assert format_matches([]) == "No matching log lines."
+    assert format_matches([("12:00", "boom")]) == "12:00 boom"
 
-    truncated = format_matches({str(i): "x" for i in range(25)}, max_lines=20)
+    truncated = format_matches([(str(i), "x") for i in range(25)], max_lines=20)
     assert truncated.endswith("... and 5 more")
 
 
@@ -45,7 +45,7 @@ def test_create_payload():
     payload = create_payload(
         {"acc_id": "123", "res_name": "biller", "resource_arn": False},
         "fields @timestamp",
-        {"12:00": "boom"},
+        [("12:00", "boom")],
     )
     body = payload["blocks"][-1]["text"]["text"]
     assert "boom" in body and "fields @timestamp" in body

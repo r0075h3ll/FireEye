@@ -16,10 +16,11 @@ def print_logs(api_response: dict):
 
 
 def collect_logs(api_response: dict):
-    return {
-        resp[2].get("value"): resp[1].get("value")
+    """Timestamp/message pairs, as a list so identical timestamps are kept."""
+    return [
+        (resp[0].get("value"), resp[1].get("value"))
         for resp in api_response["response"] or []
-    }
+    ]
 
 
 def time_diff(days: int = 3):

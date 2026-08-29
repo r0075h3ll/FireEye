@@ -7,18 +7,18 @@ from fireeye.logger import logger
 http = urllib3.PoolManager()
 
 
-def format_matches(matches: dict, max_lines: int = 20):
+def format_matches(matches: list, max_lines: int = 20):
     if not matches:
         return "No matching log lines."
 
-    lines = [f"{stamp} {message}" for stamp, message in list(matches.items())[:max_lines]]
+    lines = [f"{stamp} {message}" for stamp, message in matches[:max_lines]]
     if len(matches) > max_lines:
         lines.append(f"... and {len(matches) - max_lines} more")
 
     return "\n".join(lines)
 
 
-def create_payload(info: dict, query: str, matches: dict):
+def create_payload(info: dict, query: str, matches: list):
     account_id = info.get("acc_id", "none")
     resource_arn = info.get("resource_arn") or "none"
     resource_name = info.get("res_name", "none")
@@ -83,7 +83,7 @@ class SlackApp:
             return False
 
         try:
-            resp = http.request("POST", self.url, json=payload)
+            resp = http.request("POST", self.url, json=payload, timeout=10, retries=1)
         except Exception as e:
             logger.info(e)
             return False
