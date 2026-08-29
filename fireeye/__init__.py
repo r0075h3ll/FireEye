@@ -3,7 +3,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 
 def banner():
