@@ -139,26 +139,42 @@ class CloudWatch(AWS):
             "res_name": self.resource_name,
         }
 
+    def _stop(self, logs_client, query_id):
+        # A query left running keeps scanning, and Insights bills scanned data
+        # whether or not anyone reads the result.
+        try:
+            logs_client.stop_query(queryId=query_id)
+        except Exception as e:  # already finished, or the stop itself failed
+            # warning, not info: whoever just hit Ctrl-C is not reading debug logs
+            logger.warning(f"Could not stop query {query_id}: {e}")
+
     def _wait_for_results(self, logs_client, query_id):
         deadline = time.monotonic() + self.wait
 
-        while True:
-            results = logs_client.get_query_results(queryId=query_id)
-            status = results.get("status")
+        try:
+            while True:
+                results = logs_client.get_query_results(queryId=query_id)
+                status = results.get("status")
 
-            if status not in ("Scheduled", "Running"):
-                if status != "Complete":
-                    raise CloudWatchLogException(f"Query {status.lower()}")
+                if status not in ("Scheduled", "Running"):
+                    if status != "Complete":
+                        raise CloudWatchLogException(
+                            f"Query {status.lower()}. CloudWatch gives no reason "
+                            f"for this, so retry or narrow the time range."
+                        )
 
-                return results
+                    return results
 
-            if time.monotonic() >= deadline:
-                logs_client.stop_query(queryId=query_id)
-                raise CloudWatchLogException(
-                    f"Query did not finish within {self.wait}s"
-                )
+                if time.monotonic() >= deadline:
+                    self._stop(logs_client, query_id)
+                    raise CloudWatchLogException(
+                        f"Query did not finish within {self.wait}s"
+                    )
 
-            time.sleep(1)
+                time.sleep(1)
+        except KeyboardInterrupt:
+            self._stop(logs_client, query_id)
+            raise
 
     def fetch_logs(self, to_trace, regex=False):
         logs_client = self.aws_session.client("logs")
