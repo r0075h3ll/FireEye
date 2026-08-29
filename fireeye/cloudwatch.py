@@ -6,7 +6,7 @@ from fireeye.aws import AWS
 from fireeye.exceptions import ARNFormatError, CloudWatchLogException
 from fireeye.logger import logger, dark_green, end
 
-INSTANCE_ID = re.compile(r"i-[0-9a-f]{8,17}\Z")
+INSTANCE_ID = re.compile(r"i-[0-9a-f]{8,17}\Z", re.IGNORECASE)
 
 
 def _fields(row: list):
@@ -55,6 +55,15 @@ def parse_arn(arn: str):  # Filter resource name from un-qualified lambda arn
             f"FireEye reads Lambda and EC2 logs, but this ARN is for {service}: {arn}"
         )
 
+    if service == "lambda":
+        # arn:aws:lambda:<region>:<account>:function:<name>[:<alias or version>]
+        # The last segment is the qualifier on a qualified ARN, not the name.
+        if len(parts) < 7:
+            raise ARNFormatError(f"No function name in ARN: {arn}")
+
+        return parts[6]
+
+    # arn:aws:ec2:<region>:<account>:instance/<instance id>
     return parts[-1].split("/")[-1]
 
 
@@ -100,7 +109,11 @@ class CloudWatch(AWS):
         self.start_time, self.end_time = time_diff(days)
         self.query = ""
 
-        if is_instance_id(self.resource_name):
+        if self.resource_name.startswith("/"):
+            # Someone passed the log group itself as the resource name
+            self.log_group = log_group or self.resource_name
+            self.log_stream = ""
+        elif is_instance_id(self.resource_name):
             # EC2 log groups are named by whoever configured the CloudWatch
             # agent, so there is nothing sensible to guess here.
             if not log_group:
