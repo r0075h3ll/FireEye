@@ -30,12 +30,31 @@ pip install .
 pip install FireEye-AWS
 ```
 
+### Credentials
+
+FireEye uses your existing AWS configuration. It reads `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and
+`AWS_DEFAULT_REGION` if they are set, and otherwise falls back to whatever boto3 finds: `~/.aws/credentials`,
+a profile, or an instance role.
+
+A region is required. Without one you get `You must specify a region.` and exit status 1.
+
+The IAM permissions needed are `logs:StartQuery`, `logs:GetQueryResults`, `logs:StopQuery` and
+`sts:GetCallerIdentity`.
+
 ### Features
 
 ##### Monitor Lambda functions w/ CloudWatch Logs Insights
 
 ```bash
 fireeye --trace Bill --resource-name lambda_name
+```
+
+`--resource-name` also accepts a log group directly, and `--arn` accepts a Lambda or EC2 ARN,
+qualified ones included:
+
+```bash
+fireeye --trace Bill --resource-name /aws/lambda/lambda_name
+fireeye --trace Bill --arn arn:aws:lambda:us-east-1:123456789012:function:lambda_name:PROD
 ```
 
 ##### Monitor EC2 instances
@@ -57,7 +76,9 @@ fireeye --trace '(?i)error|timeout' --resource-name lambda_name --regex --days 7
 ```
 
 `--days` sets how far back to look (default 3) and `--limit` caps the number of lines
-returned (default 100).
+returned (default 100). Both must be 1 or greater.
+
+Without `--trace` the search term defaults to `duration`.
 
 ##### Get alerts on a Slack channel
 
@@ -68,6 +89,42 @@ fireeye --trace Bill --resource-name lambda_name --slack-url
 # or pass it inline
 fireeye --trace Bill --resource-name lambda_name --slack-url https://slack-webhook-url
 ```
+
+An alert that cannot be delivered is an error, not a warning: if the webhook is unreachable, returns a
+non-200, or is not set at all, FireEye exits 1. Long results are trimmed to fit Slack's message limit and
+the remainder is counted in a trailing line.
+
+### Output and exit status
+
+Matched log lines go to stdout. Everything else, banner and progress and errors, goes to stderr, so
+results can be piped or redirected on their own:
+
+```bash
+fireeye --trace ERROR --resource-name lambda_name > matches.txt
+```
+
+| Status | Meaning |
+| --- | --- |
+| 0 | Ran successfully, whether or not anything matched |
+| 1 | Failed: no credentials, no region, missing log group, access denied, bad query, Slack alert not delivered |
+| 2 | Bad arguments |
+
+Errors print as a single line. Add `--debug` for the full traceback.
+
+This makes it usable from cron:
+
+```bash
+0 * * * * fireeye --trace ERROR --resource-name lambda_name --slack-url || logger fireeye failed
+```
+
+### Development
+
+```bash
+python3 test_fireeye.py
+```
+
+No test framework needed. The checks cover ARN parsing, query building and escaping, result handling,
+and the Slack payload, and they make no AWS calls.
 
 ### To Do
 
