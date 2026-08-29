@@ -1,6 +1,7 @@
 """Self-check for the pure helpers. Run: python3 test_fireeye.py"""
 
 from fireeye.cloudwatch import (
+    CloudWatch,
     build_query,
     collect_logs,
     is_instance_id,
@@ -8,7 +9,7 @@ from fireeye.cloudwatch import (
     print_logs,
     quote,
 )
-from fireeye.exceptions import ARNFormatError
+from fireeye.exceptions import ARNFormatError, CloudWatchLogException
 from fireeye.slack import create_payload, format_matches
 
 
@@ -106,6 +107,73 @@ def test_create_payload():
     body = payload["blocks"][-1]["text"]["text"]
     assert "boom" in body and "fields @timestamp" in body
     assert "Resource ARN: none" in str(payload)
+
+
+class FakeLogs:
+    """Enough of the CloudWatch Logs client to drive the polling loop."""
+
+    def __init__(self, statuses, interrupt_on=None):
+        self.statuses = list(statuses)
+        self.interrupt_on = interrupt_on
+        self.calls = 0
+        self.stopped = []
+
+    def get_query_results(self, queryId):
+        self.calls += 1
+        if self.calls == self.interrupt_on:
+            raise KeyboardInterrupt
+
+        status = self.statuses.pop(0) if self.statuses else "Running"
+
+        return {"status": status, "results": [] if status == "Complete" else None}
+
+    def stop_query(self, queryId):
+        self.stopped.append(queryId)
+
+
+def _waiter(wait=60):
+    watcher = CloudWatch.__new__(CloudWatch)  # no AWS session, no credentials
+    watcher.wait = wait
+
+    return watcher
+
+
+def test_polling_waits_then_returns():
+    logs = FakeLogs(["Scheduled", "Running", "Complete"])
+    assert _waiter()._wait_for_results(logs, "q1")["status"] == "Complete"
+    assert logs.calls == 3
+    assert logs.stopped == []
+
+
+def test_failed_and_cancelled_queries_raise():
+    for status in ("Failed", "Cancelled", "Timeout"):
+        try:
+            _waiter()._wait_for_results(FakeLogs([status]), "q1")
+            raise AssertionError(f"{status} should have raised")
+        except CloudWatchLogException as e:
+            assert status.lower() in str(e)
+
+
+def test_timeout_stops_the_query():
+    logs = FakeLogs(["Running"])
+    try:
+        _waiter(wait=0)._wait_for_results(logs, "q1")
+        raise AssertionError("should have timed out")
+    except CloudWatchLogException as e:
+        assert "did not finish" in str(e)
+
+    assert logs.stopped == ["q1"], "a timed out query must be stopped"
+
+
+def test_interrupt_stops_the_query():
+    logs = FakeLogs(["Running", "Running"], interrupt_on=2)
+    try:
+        _waiter()._wait_for_results(logs, "q1")
+        raise AssertionError("should have propagated KeyboardInterrupt")
+    except KeyboardInterrupt:
+        pass
+
+    assert logs.stopped == ["q1"], "an interrupted query must be stopped"
 
 
 if __name__ == "__main__":

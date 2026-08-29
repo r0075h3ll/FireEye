@@ -100,6 +100,10 @@ def main():
         return fail(e.response.get("Error", {}).get("Message", e))
     except BotoCoreError as e:
         return fail(e)
+    except KeyboardInterrupt:
+        logger.error("Interrupted")
+
+        return 130
 
     print_logs(logs)
 
