@@ -12,6 +12,15 @@ def read(fname):
     return open(os.path.join(this_dir, fname)).read()
 
 
+def get_version():
+    # Read it rather than import it, so setup.py does not pull in the package
+    for line in read(os.path.join("fireeye", "__init__.py")).splitlines():
+        if line.startswith("__version__"):
+            return line.split('"')[1]
+
+    raise RuntimeError("__version__ not found in fireeye/__init__.py")
+
+
 install_requires = [
     "boto3==1.35.54",
     "botocore==1.35.54",
@@ -24,7 +33,7 @@ install_requires = [
 
 setup(
     name="FireEye-AWS",
-    version="0.6.0-dev",
+    version=get_version(),
     author="Hardik Nanda",
     author_email="hnanda21@gmail.com",
     description="AWS Monitoring Toolkit",
