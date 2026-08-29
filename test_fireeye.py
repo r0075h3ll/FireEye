@@ -223,6 +223,16 @@ def test_stop_failure_is_warned_not_hidden():
         logger.removeHandler(handler)
 
     assert any(r.levelno >= logging.WARNING for r in records), records
+def test_old_module_path_still_works():
+    import warnings
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        from fireeye.aws_lambda import CloudWatch, parse_arn as old_parse_arn
+
+    assert CloudWatch.__module__ == "fireeye.cloudwatch"
+    assert old_parse_arn("biller") == "biller"
+    assert any(w.category is DeprecationWarning for w in caught)
 
 
 if __name__ == "__main__":
