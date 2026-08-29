@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FireEye-AWS"
+description = "AWS Monitoring Toolkit"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Hardik Nanda", email = "hnanda21@gmail.com" }]
+keywords = ["fireeye", "aws", "cloudwatch", "logs", "logs-insights"]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+    "Development Status :: 4 - Beta",
+    "Topic :: Software Development",
+]
+# only what the package imports; boto3 brings botocore, jmespath, s3transfer,
+# python-dateutil and six along with it
+dependencies = [
+    "boto3>=1.35.54",
+    "botocore>=1.35.54",
+    "urllib3>=2.2.3",
+]
+dynamic = ["version"]
+
+[project.scripts]
+fireeye = "fireeye.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/r0075h3ll/FireEye"
+Issues = "https://github.com/r0075h3ll/FireEye/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "fireeye.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["fireeye*"]
