@@ -33,27 +33,48 @@ pip3 install FireEye-AWS
 
 ### Features
 
-##### Monitor lambda functions w/ CloudWatch Logs Insights
+##### Monitor Lambda functions w/ CloudWatch Logs Insights
 
-```python
+```bash
 fireeye --trace Bill --resource-name lambda_name
 ```
 
-[//]: # (##### Get alerts on a slack channel)
+##### Monitor EC2 instances
 
-[//]: # ()
+EC2 log groups are named by whoever set up the CloudWatch agent, so pass the group explicitly.
+Logs are scoped to the streams belonging to the instance.
 
-[//]: # (```python)
+```bash
+fireeye --trace "Out of memory" --resource-name i-0abc1234 --log-group /var/log/syslog
+```
 
-[//]: # (fireeye --trace Bill --resource-name lambda_name --slack-url https://slack-webhook-url)
+##### Search
 
-[//]: # (```)
+`--trace` is a plain substring match by default. Pass `--regex` to use a CloudWatch regex
+instead, which also gets you case-insensitive and multi-term searches:
+
+```bash
+fireeye --trace '(?i)error|timeout' --resource-name lambda_name --regex --days 7 --limit 200
+```
+
+`--days` sets how far back to look (default 3) and `--limit` caps the number of lines
+returned (default 100).
+
+##### Get alerts on a Slack channel
+
+```bash
+export SLACK_URL=https://slack-webhook-url
+fireeye --trace Bill --resource-name lambda_name --slack-url
+
+# or pass it inline
+fireeye --trace Bill --resource-name lambda_name --slack-url https://slack-webhook-url
+```
 
 ### To Do
 
-- [ ] EC2 Log Monitoring
-- [ ] Send alerts on slack channel
-- [ ] Improved search capabilities
+- [x] EC2 Log Monitoring
+- [x] Send alerts on slack channel
+- [x] Improved search capabilities
 
 ### Contributions
 
